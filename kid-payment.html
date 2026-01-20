@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>小朋友支付页面</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 400px;
+            background: white;
+            border-radius: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4fc3f7 0%, #29b6f6 100%);
+            padding: 30px 20px;
+            text-align: center;
+        }
+
+        .kid-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: linear-gradient(145deg, #e1f5fe, #b3e5fc);
+            margin: 0 auto 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 80px;
+            box-shadow: 0 8px 25px rgba(79,195,247,0.4);
+            border: 5px solid white;
+            overflow: hidden;
+        }
+
+        .kid-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+
+        .header h2 {
+            color: white;
+            font-size: 1.3em;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .content {
+            padding: 30px 25px;
+        }
+
+        .amount-label {
+            text-align: center;
+            color: #666;
+            font-size: 1.1em;
+            margin-bottom: 15px;
+        }
+
+        .amount-display {
+            background: linear-gradient(135deg, #42a5f5 0%, #1976d2 100%);
+            border-radius: 20px;
+            padding: 25px;
+            text-align: center;
+            margin-bottom: 25px;
+            box-shadow: 0 8px 25px rgba(66,165,245,0.3);
+        }
+
+        .currency {
+            color: rgba(255,255,255,0.8);
+            font-size: 1.4em;
+            vertical-align: top;
+        }
+
+        .amount-input {
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 2.5em;
+            font-weight: bold;
+            text-align: center;
+            width: 100%;
+            outline: none;
+            letter-spacing: 2px;
+        }
+
+        .amount-input::placeholder {
+            color: rgba(255,255,255,0.6);
+        }
+
+        .preset-amounts {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 25px;
+        }
+
+        .preset-btn {
+            background: #e3f2fd;
+            border: 2px solid #bbdefb;
+            border-radius: 15px;
+            padding: 15px 10px;
+            font-size: 1.2em;
+            color: #1976d2;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .preset-btn:hover {
+            background: #42a5f5;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .preset-btn:active {
+            transform: translateY(0);
+        }
+
+        .pay-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #42a5f5 0%, #1976d2 100%);
+            border: none;
+            border-radius: 20px;
+            padding: 20px;
+            font-size: 1.3em;
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: 0 10px 30px rgba(66,165,245,0.4);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .pay-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(66,165,245,0.5);
+        }
+
+        .pay-btn:active {
+            transform: translateY(-1px);
+        }
+
+        .pay-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Success Page */
+        .success-page {
+            display: none;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #b3e5fc 0%, #e1f5fe 100%);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 1000;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .success-page.show {
+            display: flex;
+        }
+
+        .success-icon {
+            font-size: 100px;
+            margin-bottom: 30px;
+            animation: bounce 1s ease infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+
+        .success-title {
+            font-size: 2em;
+            color: #1565c0;
+            margin-bottom: 20px;
+            text-shadow: 0 2px 10px rgba(21,101,192,0.2);
+        }
+
+        .success-amount {
+            font-size: 3em;
+            background: linear-gradient(135deg, #1976d2, #42a5f5);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: bold;
+            margin-bottom: 40px;
+        }
+
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: #ffd700;
+            animation: fall 3s linear infinite;
+        }
+
+        @keyframes fall {
+            to {
+                transform: translateY(100vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+
+        .back-btn {
+            background: white;
+            border: 3px solid #1976d2;
+            border-radius: 25px;
+            padding: 15px 40px;
+            font-size: 1.1em;
+            color: #1976d2;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background: #1976d2;
+            color: white;
+        }
+
+        .cute-decoration {
+            position: absolute;
+            font-size: 30px;
+            opacity: 0.6;
+        }
+
+        .decoration-1 { top: 20px; left: 20px; }
+        .decoration-2 { top: 30px; right: 25px; }
+        .decoration-3 { bottom: 20px; left: 25px; }
+        .decoration-4 { bottom: 30px; right: 20px; }
+
+        /* Loading animation */
+        .loading {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255,255,255,0.9);
+            z-index: 999;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .loading.show {
+            display: flex;
+        }
+
+        .loader {
+            width: 60px;
+            height: 60px;
+            border: 6px solid #e3f2fd;
+            border-top: 6px solid #42a5f5;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            margin-top: 20px;
+            color: #1976d2;
+            font-size: 1.1em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="kid-avatar">
+                <img src="dd.jpg" alt="小朋友头像" onerror="this.outerHTML='👦'">
+            </div>
+            <h2>小小支付体验</h2>
+        </div>
+        
+        <div class="content">
+            <p class="amount-label">请输入支付金额</p>
+            
+            <div class="amount-display">
+                <span class="currency">¥</span>
+                <input type="number" class="amount-input" id="amountInput" placeholder="0.00" step="0.01" min="0">
+            </div>
+            
+            <div class="preset-amounts">
+                <button class="preset-btn" onclick="setAmount(1)">¥1</button>
+                <button class="preset-btn" onclick="setAmount(5)">¥5</button>
+                <button class="preset-btn" onclick="setAmount(10)">¥10</button>
+                <button class="preset-btn" onclick="setAmount(20)">¥20</button>
+                <button class="preset-btn" onclick="setAmount(50)">¥50</button>
+                <button class="preset-btn" onclick="setAmount(100)">¥100</button>
+            </div>
+            
+            <button class="pay-btn" onclick="processPayment()">
+                <span>🚀</span>
+                <span>立即支付</span>
+                <span>🚀</span>
+            </button>
+        </div>
+        
+        <div class="cute-decoration decoration-1">⚽</div>
+        <div class="cute-decoration decoration-2">🚀</div>
+        <div class="cute-decoration decoration-3">⭐</div>
+        <div class="cute-decoration decoration-4">🔥</div>
+    </div>
+
+    <!-- Loading -->
+    <div class="loading" id="loading">
+        <div class="loader"></div>
+        <p class="loading-text">支付中...</p>
+    </div>
+
+    <!-- Success Page -->
+    <div class="success-page" id="successPage">
+        <div class="success-icon">🎉</div>
+        <h1 class="success-title">已成功支付</h1>
+        <p class="success-amount" id="successAmount">¥0.00</p>
+        <button class="back-btn" onclick="goBack()">再来一次</button>
+    </div>
+
+    <script>
+        function setAmount(amount) {
+            document.getElementById('amountInput').value = amount.toFixed(2);
+        }
+
+        function processPayment() {
+            const amount = document.getElementById('amountInput').value;
+            
+            if (!amount || parseFloat(amount) <= 0) {
+                alert('请输入正确的支付金额哦~');
+                return;
+            }
+            
+            document.getElementById('loading').classList.add('show');
+            
+            setTimeout(() => {
+                document.getElementById('loading').classList.remove('show');
+                document.getElementById('successAmount').textContent = '¥' + parseFloat(amount).toFixed(2);
+                document.getElementById('successPage').classList.add('show');
+                createConfetti();
+            }, 2000);
+        }
+
+        function goBack() {
+            document.getElementById('successPage').classList.remove('show');
+            document.getElementById('amountInput').value = '';
+        }
+
+        function createConfetti() {
+            const colors = ['#42a5f5', '#1976d2', '#ff7043', '#ffb74d', '#81c784', '#64b5f6', '#ba68c8'];
+            
+            for (let i = 0; i < 50; i++) {
+                setTimeout(() => {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.left = Math.random() * 100 + 'vw';
+                    confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+                    confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+                    confetti.style.animationDuration = (Math.random() * 2 + 2) + 's';
+                    document.body.appendChild(confetti);
+                    
+                    setTimeout(() => confetti.remove(), 4000);
+                }, i * 50);
+            }
+        }
+    </script>
+</body>
+</html>
